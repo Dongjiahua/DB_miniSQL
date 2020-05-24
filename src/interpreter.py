@@ -35,7 +35,10 @@ class Interpreter():
         return file_parse
     
     def execute(self,file_name):
-        f =  open("test\\"+file_name, 'r', encoding='utf8')
+        try:
+            f =  open("test\\"+file_name, 'r', encoding='utf8')
+        except Exception as e:
+            print(str(e))
         text = f.read()
         f.close()
         commands = text.split(';')
@@ -72,7 +75,7 @@ class Interpreter():
                     print(str(e))
             elif command.split(' ')[0] == 'execfile':
                 try:
-                    pass
+                    self.execute(command[9:])
                 except Exception as e:
                     print(str(e))
             elif command.split(' ')[0] == 'quit':
