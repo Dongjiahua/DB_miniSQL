@@ -1,0 +1,33 @@
+create table student2(
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+
+drop table student;
+
+create index stunameidx on student ( sname );
+
+drop index stunameidx;
+
+select * from student;
+select * from student where sno = ‘88888888’;
+select * from student where sage > 20 and sgender = ‘F’;
+
+insert into student values (‘12345678’,’wy’,22,’M’);
+
+delete from student;
+delete from student where sno = ‘88888888’;
+
+  quit;
+
+
+
+execfile new.txt;
+
+  execfile new.txt;
+
+  。 execfile new.txt;
+
+select * from student whom where sno = ‘88888888’
