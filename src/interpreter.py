@@ -70,8 +70,18 @@ class Interpreter():
                     api.create(command[6:])
                 except Exception as e:
                     print(str(e))
+            elif command.split(' ')[0] == 'execfile':
+                try:
+                    pass
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'quit':
+                try:
+                    pass
+                except Exception as e:
+                    print(str(e))
             else :
-                print("ERROR")
+                print("SYNTAX ERROR")
 
 
     def __init__(self):
