@@ -1,6 +1,28 @@
 # DB_miniSQL
 MiniSQL for DB course
 
+## 文件目录说明
+
+- data
+
+  - 预留
+
+- doc
+
+  - 记录文档
+
+- options
+
+  - 废弃代码
+
+- src
+
+- test
+
+  - 测试文件
+  - 其中sql.txt为固定测试文件
+
+
 ## 已实现
 
 - Interpreter
