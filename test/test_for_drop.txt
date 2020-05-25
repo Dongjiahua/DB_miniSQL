@@ -1,0 +1,5 @@
+drop table student;
+drop index stunameidx;
+drop ind stunameidx asdfa;
+drop table indexsd asda;
+dro table name;
