@@ -23,6 +23,63 @@ MiniSQL for DB course
   - 测试文件
   - 其中sql.txt为固定测试文件
 
+## 接口说明
+
+- 位置 api.py
+
+- 目前是丐版…后续会把catalog中的处理移到这个部分，各位需要什么预处理可以提出来
+
+- select
+
+  - table 表名
+  - condition 条件
+    - 尚未翻译为内部语言
+    - 形如“ A op B”的字符串
+  - columns
+    - 列名
+    - 形如“A,B,C"的字符串
+    - 空缺为”*“
+
+- create
+
+  - table
+
+    - name
+
+    - statement
+
+      ```
+      id int, name char(12) unique, score float, 	primary key(id) 
+      ```
+
+  - index
+
+    - name
+    - table
+    - column
+
+- drop
+
+  - table name
+  - index name
+
+- insert
+
+  - table
+
+  - values
+
+    ```
+    ‘12345678’,’wy’,22,’M’
+    ```
+
+- delete
+
+  - table
+  - lists
+    - 以空格分割的where子句
+
+
 
 ## 已实现
 
