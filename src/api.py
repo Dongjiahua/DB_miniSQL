@@ -82,6 +82,7 @@ def drop(args):
         index = args[6:].strip()
         catalog.not_exists_index(index)
         catalog.drop_index(index)
+        # index.delete_table(table)
         time_end = time.time()
         print("Successfully delete index '%s', time elapsed : %fs." % (index,time_end - time_start))
 
