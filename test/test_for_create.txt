@@ -1,11 +1,11 @@
-create table student2(
+create table student (
 ​	id int,
 ​	name char(12) unique,
 ​	score float,
 ​	primary key(id) 
 );
 
-create table student2 (
+create table 学生 (
 ​	id int,
 ​	name char(12) unique,
 ​	score float,
@@ -26,8 +26,8 @@ cate table student2 (
 ​	score float,
 ​	primary key(id) 
 );
-create index stunameidx on student ( sname );
+create index stunameidx on student ( name );
 
 create inex stunameidx on student( sname );
 
-create inex stunameidx o tudent( sname );
+create inex stunameidx o tudent( name );

@@ -1,0 +1,17 @@
+create table 学生 (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id)
+);
+
+create table student (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+
+create index stunameidx on 学生(name);
+drop index stunameidx;
+

@@ -2,4 +2,5 @@
 # execfile test_for_drop.txt;
 # execfile test_for_delete.txt;
 # execfile test_for_select.txt;
- execfile test_for_insert.txt;
+# execfile test_for_insert.txt;
+ execfile test_for_metadata.txt;

@@ -129,3 +129,28 @@
 ## 三、Catalog Manager
 
 - 实现 <https://www.write-bug.com/article/2175.html>
+
+
+
+### 实际实现
+
+- 表中信息
+  - 名称
+  - 主键
+  - 属性
+  - 索引
+- 表上字段
+  - 属性名
+  - 是否唯一
+  - 类型
+  - 长度
+- 全局变量
+  - all_table
+    - list for table_instance
+  - all_index
+    - list for index
+    - all_index[index_name] = {'table':table_name,'column':column}
+- primary key
+  - 暂不支持联合
+- index
+  - 暂不支持联合
