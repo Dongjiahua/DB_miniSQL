@@ -60,6 +60,66 @@
 - Github <https://github.com/andialbrecht/sqlparse>
 - 文档 <https://sqlparse.readthedocs.io/en/latest/intro/>
 
+#### pyparsing
+
+- SQL查询解析器 <https://github.com/mozilla/moz-sql-parser>
+- SQL解析器 <http://jakewheat.github.io/simple-sql-parser/latest/>
+
+### 实际实现
+
+最终发现，想要完成一个完善的SQL parser难度很大，而且调用成熟的库处理难度也很大。miniSQL的要求较为简单，因此，采取自实现的方式。将各语句逐次进行分类，再分别检验、处理和实现。
+
+- 预处理
+  - 按分号分割子句
+  - 剔除不必要的空格
+- 初步分类 - interpreter
+  - 根据语句中第一个关键字进行分类
+  - 分为create\drop\select\delete\insert\execfile\quit
+- 细分类 - API
+  - create
+    - table
+    - index
+  - drop
+    - table
+    - index
+- 对各语句分别进行处理 - API
+
+### 测试样例
+
+> create table student2(
+> ​	id int,
+> ​	name char(12) unique,
+> ​	score float,
+> ​	primary key(id) 
+> );
+>
+> drop table student;
+>
+> create index stunameidx on student ( sname );
+>
+> drop index stunameidx;
+>
+> select * from student;
+> select * from student where sno = ‘88888888’;
+> select * from student where sage > 20 and sgender = ‘F’;
+>
+> insert into student values (‘12345678’,’wy’,22,’M’);
+>
+> delete from student;
+> delete from student where sno = ‘88888888’;
+>
+>   quit;
+>
+>
+>
+> execfile new.txt;
+>
+>   execfile new.txt;
+>
+>   。 execfile new.txt;
+>
+> select * from student whom where sno = ‘88888888’
+
 
 
 ## 二、API
@@ -68,3 +128,4 @@
 
 ## 三、Catalog Manager
 
+- 实现 <https://www.write-bug.com/article/2175.html>
