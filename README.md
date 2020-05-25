@@ -37,5 +37,5 @@ MiniSQL for DB course
   - where子句各查询条件
   - 多表的名称
 - catalog
-  - metadata什么鬼
+  - metadata orz
 
