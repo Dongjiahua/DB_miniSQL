@@ -28,15 +28,12 @@ def bytes2float(bs):
     ba.append(bs[3])
     return struct.unpack("!f", ba)[0]
 
-
 def float2bytes(f):
     bs = struct.pack("f", f)
     return bs
 
-
 def string2bytes(s):
     return s.encode(encoding='utf-8')
-
 
 def bytes2string(b):
     return str(b,'utf-8')
@@ -44,7 +41,6 @@ def bytes2string(b):
 
 def bytes2int(bytes_data):
     return int.from_bytes(bytes_data, byteorder='big', signed=False)
-
 
 def int2bytes(int_data):
     return int_data.to_bytes(length=4, byteorder='big', signed=False)
@@ -99,14 +95,22 @@ class bufferManager:
         os.remove(fileName)
 
     def loadFile(self, fileName):
-        blockNeed = os.path.getsize(fileName) // BlockSize
-        self.filePool[fileName] = file()
-        for i in range(blockNeed):
-            self.loadBlock(fileName,i)
+        if fileName not in self.filePool.keys():
+            blockNeed = os.path.getsize(fileName) // BlockSize
+            self.filePool[fileName] = file()
+            self.filePool[fileName].b_num=blockNeed
+            for i in range(blockNeed):
+                self.loadBlock(fileName,i)
+
+    def getBlockNum(self,fileName):
+        if fileName not in self.filePool.keys():
+            blockNeed = os.path.getsize(fileName) // BlockSize
+            self.filePool[fileName] = file()
+            self.filePool[fileName].b_num = blockNeed
+        return self.filePool[fileName].b_num
 
     def loadBlock(self,fileName,block):
-        with open(fileName, 'rb') as input:
-            data = input.read()
+        if not(fileName in self.filePool.keys() and block in self.filePool[fileName].blocks.keys()):
             if fileName not in self.filePool.keys():
                 self.filePool[fileName]=file()
             to_use=self.getFreeBlock()
@@ -115,19 +119,31 @@ class bufferManager:
                 input.seek(block*BlockSize,0)
                 self.Blockpool[to_use].offset = block * BlockSize
                 self.Blockpool[to_use].content=input.read(BlockSize)
+                self.Blockpool[to_use].fileKey=fileName
                 self._poolState[to_use] = False
+            input.close()
+        else:
+            to_use=self.filePool[fileName].blocks[block]
+        return to_use
 
 
     def writeBlock(self,block):
-        with open(self.filePool[self.Blockpool[block].fileKey], 'wb') as output:
+        with open(self.Blockpool[block].fileKey, 'rb+') as output:
             if self.Blockpool[block].dirty:
                 output.seek(self.Blockpool[block].offset, 0)
                 output.write(self.Blockpool[block].content)
-                self.Blockpool[block].dirty = FALSE
+                self.Blockpool[block].dirty = False
+            output.close()
+
 
     def writeFile(self, fileName):
-        for i in self.filePool[fileName].blocks.values:
-            self.writeBlock(i)
+        if len(self.filePool[fileName].blocks)>0:
+            for i in self.filePool[fileName].blocks.values():
+                self.writeBlock(i)
+        else:
+            with open(fileName, 'ab+') as output:
+                output.close()
+
 
     def writeBackAll(self):
         for i in self.filePool.keys():
@@ -138,7 +154,7 @@ class bufferManager:
 
 
 class file:
-    def __int__(self):
+    def __init__(self):
         self.dirty = False
         self.artributes = {}
         self.index = FALSE
