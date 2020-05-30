@@ -92,7 +92,7 @@ class Interpreter():
     def __init__(self):
         print("Constructing interpreter...")
         self.execute('sql.txt')
-        catalog.debug_for_create()
+    #    catalog.debug_for_create()
 
 
 

@@ -1,6 +1,13 @@
 import re
 import time
 import catalog
+from record_manager import *
+from buffer_manager import *
+
+global buf 
+buf = bufferManager()
+global RM
+RM=record_manager(buf)
 
 def command_debug(sql,table,conditions,columns):
     print("SQL : ",sql)
@@ -15,20 +22,40 @@ def select(args):
     start_from = re.search('from', args).start()
     end_from = re.search('from', args).end()
     columns = args[0:start_from].strip()
+    conditions = {}
     if re.search('where', args):
         start_where = re.search('where', args).start()
         end_where = re.search('where', args).end()
         table = args[end_from+1:start_where].strip()
-        conditions = args[end_where+1:].strip()
+        statement = args[end_where+1:].strip()
+        catalog.not_exists_table(table)
+        catalog.check_select_statement(table,statement,columns)
+        statement = statement.split('and')
+        for i in range(0,len(statement)):
+            con_list = statement[i].strip().split(' ')
+            try:
+                con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
+                conditions[i] = {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}
+            except Exception as e:
+                print("[INVALID INDENTIFIER] API Module : "+str(e))
+            conditions[i] = convert_type(table,conditions[i])
+            results = RM.tuple_select(all_table[table], conditions[0])
+
     else:
         table = args[end_from+1:].strip()
-        conditions = ''
-    ## command_debug("select "+args,table,conditions,columns)
-    catalog.not_exists_table(table)
-    # catalog.check_select_statement(table,conditions,columns)
+        conditions = None
+        catalog.not_exists_table(table)
+        results = RM.tuple_select(all_table[table], conditions)
+        # catalog.check_select_statement(table,conditions,columns)
+    #command_debug("select "+args,table,conditions,columns)
+
+    # results = RM.tuple_select(all_table[table], conditions)
     # index.select_from_table(table,conditions,columns)
+    # results = convert_result(table,results)
+    table_print(all_table[table],results)
+    #
     time_end = time.time()
-    print(" time elapsed : %fs." % (time_end-time_start))
+    print("%d row(s) affected. Time elapsed : %fs." %(len(results) ,(time_end-time_start)))
 
 
 def create(args):
@@ -43,6 +70,7 @@ def create(args):
         statement = args[start + 1:end].strip()
         catalog.exists_table(table)
         # index.create_table(table,statement)
+        RM.table_create(table)
         catalog.create_table(table,statement)
     elif lists[0] == 'index':
         index_name = lists[1]
@@ -102,10 +130,13 @@ def insert(args):
     value = args[re.search('\(',args).start()+1:find_last(args,')')]
     values = value.split(',')
     catalog.not_exists_table(table)
-    catalog.check_type_in_table(table,values)
+    values = catalog.check_type_in_table(table,values)
+
+    print(values)
     # index.insert_into_table(table,values)
+    RM.tuple_insert(values,all_table[table])
     time_end = time.time()
-    print(" time elapsed : %fs." % (time_end-time_start))
+    print("Successfully insert. Time elapsed : %fs." % (time_end-time_start))
 
 def delete(args):
     time_start = time.time()
@@ -118,11 +149,37 @@ def delete(args):
     table = lists[1]
     catalog.not_exists_table(table)
     # if len(lists) == 2:
-    #     index.delete_from_table(table,[])
-    # else:
-    #     index.delete_from_table(table,lists[3:])
+    #     record_manager.tuple_delete(table,[])
+    start_from = re.search('from', args).start()
+    end_from = re.search('from', args).end()
+    columns = args[0:start_from].strip()
+    conditions = {}
+    if re.search('where', args):
+        start_where = re.search('where', args).start()
+        end_where = re.search('where', args).end()
+        table = args[end_from+1:start_where].strip()
+        statement = args[end_where+1:].strip()
+        catalog.not_exists_table(table)
+        catalog.check_select_statement(table,statement,columns)
+        statement = statement.split('and')
+        for i in range(0,len(statement)):
+            con_list = statement[i].strip().split(' ')
+            try:
+                con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
+                conditions[i] = {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}
+                conditions[i] = convert_type(table,conditions[i])
+            except Exception as e:
+                print("[INVALID INDENTIFIER] API Module : "+str(e))
+
+    else:
+        table = args[end_from+1:].strip()
+        conditions = {}
+        catalog.not_exists_table(table)
+        catalog.check_select_statement(table,conditions,columns)
+
+    record_manager.tuple_delete(table, conditions[0])
     time_end = time.time()
-    print(" time elapsed : %fs." % (time_end-time_start))
+    print("Successfully delete. Time elapsed : %fs." % (time_end-time_start))
 
 def find_last(string,str):
     last_position=-1

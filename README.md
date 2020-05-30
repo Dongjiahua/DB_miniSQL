@@ -1,4 +1,27 @@
 # DB_miniSQL
+## For DJH
+
+- char类型
+  - 可以查询比较
+  - 返回值不能正确解析？
+    - 等值查询没问题…
+    - 返回直接打印出来就不太对…
+- 关于查询
+  - char类型完全可以正确查询
+  - int类型
+    - 非primary key 可以正确查询
+    - primary key 不行
+  - 缺省条件查询…
+
+## 做了以及没做的事情
+
+- 还没用内存管理
+- 最新版本合并还没成功
+- 界面还莫得
+- 
+
+
+
 MiniSQL for DB course
 
 ## 文件目录说明
@@ -95,19 +118,18 @@ MiniSQL for DB course
 - catalog
   - create table/index
     - 可以正常存储表和索引的元数据
-  - 
 - 中文
   - UTF-8
+- check before select
+- 加两个类型
+  - varchar = char(255)
+  - bool
 
 ## 待办
 
-- check before select & insert
-- select中进一步分割
-  - where子句各查询条件
-  - 多表的名称
 - catalog metadata的文件读写
-- 加注释
-  - so有疑惑请戳我
+- 申请block来记录metadata
+- 结果输出函数
 
 ## 一些坑
 
@@ -115,4 +137,10 @@ MiniSQL for DB course
   - 可能会出现非常感人的有意无意的灾难性的注入
 - insert语句中values字段的判断用的是in
   - 可能valuesxxxxx也不会报错…
+- 空值 Null字符串
+- 属性名不能出现and…orz
+
+- - 
+
+
 

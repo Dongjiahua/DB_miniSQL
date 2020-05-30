@@ -215,6 +215,8 @@ class record_manager:
 
     def tuple_select(self, table, condition):
         file_name=self.table2file(table.name)
+        # for debug
+        # condition = condition[0]
         column_id=condition['column_id']
         op=condition['op']
         value=condition['value']
@@ -261,12 +263,12 @@ class record_manager:
 
 if __name__ == '__main__':
     table=table_instance("student")
-    table.columns=[column("id",True,'char',5),column("age",False,'int')]
+    table.columns=[column("id",True,'char',5),column("age",False,'float')]
     buf=bufferManager()
     RM=record_manager(buf)
-    #RM.table_create("student")
-    RM.tuple_insert(['12349',34],table)
-    result=RM.tuple_select(table,{"column_id":0,"op":"=","value":"12349"})
+    RM.table_create("student")
+    RM.tuple_insert(['ABCD',35],table)
+    result=RM.tuple_select(table,{"column_id":0,"op":"=","value":"ABCD"})
     RM.tuple_delete(table,{"column_id":0,"op":"=","value":"12346"})
     print(result)
     result=RM.tuple_select(table,{"column_id":0,"op":">=","value":"12345"})

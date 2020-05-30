@@ -3,4 +3,6 @@
 # execfile test_for_delete.txt;
 # execfile test_for_select.txt;
 # execfile test_for_insert.txt;
- execfile test_for_metadata.txt;
+# execfile test_for_metadata.txt;
+# execfile test_for_select&create.txt;
+execfile test_student.txt;
