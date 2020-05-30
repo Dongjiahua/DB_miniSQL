@@ -22,10 +22,10 @@ TRUE = 1
 
 def bytes2float(bs):
     ba = bytearray()
-    ba.append(bs[0])
-    ba.append(bs[1])
-    ba.append(bs[2])
     ba.append(bs[3])
+    ba.append(bs[2])
+    ba.append(bs[1])
+    ba.append(bs[0])
     return struct.unpack("!f", ba)[0]
 
 def float2bytes(f):
@@ -37,7 +37,6 @@ def string2bytes(s):
 
 def bytes2string(b):
     return str(b,'utf-8')
-
 
 def bytes2int(bytes_data):
     return int.from_bytes(bytes_data, byteorder='big', signed=False)
@@ -131,7 +130,9 @@ class bufferManager:
         with open(self.Blockpool[block].fileKey, 'rb+') as output:
             if self.Blockpool[block].dirty:
                 output.seek(self.Blockpool[block].offset, 0)
+                print(self.Blockpool[block].offset)
                 output.write(self.Blockpool[block].content)
+                print(len(self.Blockpool[block].content))
                 self.Blockpool[block].dirty = False
             output.close()
 
@@ -141,7 +142,7 @@ class bufferManager:
             for i in self.filePool[fileName].blocks.values():
                 self.writeBlock(i)
         else:
-            with open(fileName, 'ab+') as output:
+            with open(fileName, 'rb+') as output:
                 output.close()
 
 

@@ -2,7 +2,28 @@
 from api import *
 from catalog import *
 from buffer_manager import *
+import math
 import os
+
+relation_dic={"<":0,"=":1,">":2}
+
+def compare(a,b):
+    if type(a)==int or type(a)==str:
+        if a<b:
+            return 0
+        elif a==b:
+            return 1
+        else:
+            return 2
+    if type(a)==float:
+        if math.fabs(a-b)<math.fabs(b)/10000.0:
+            return 1
+        elif a-b>=math.fabs(b)/10000.0:
+            return 2
+        elif a-b<-math.fabs(b)/10000.0:
+            return 0
+
+
 
 def intToBin8(i):
     return (bin(((1 << 8) - 1) & i)[2:]).zfill(8)
@@ -26,7 +47,7 @@ class record_manager:
         self.buf.deleteFile(file_name)
 
     def tuple_insert(self, values,table):
-        condition={"column_id":table.primary_key,'op':'=','value':values[table.primary_key]}
+        condition=[{"column_id":table.primary_key,'op':'=','value':values[table.primary_key]}]
         if len(self.tuple_select(table,condition))>0:
             return
         file_name=self.table2file(table.name)
@@ -148,53 +169,59 @@ class record_manager:
 
     def tuple_delete(self, table, condition):
         file_name = self.table2file(table.name)
-        column_id = condition['column_id']
-        op = condition['op']
-        value = condition['value']
         offset = self.get_head_length(table)
-
-        if table.columns[column_id].has_index:
-            tuples_addr = [[]]
-            for i in tuples_addr:
-                self.delete_record(i)
-        else:
-            block_num = self.buf.getBlockNum(file_name)
-            for i in range(block_num):
-                temp_block = self.buf.loadBlock(file_name, i)
-                entries = bytes2int(self.buf.Blockpool[temp_block].content[:4])
-                for j in range(entries):
-                    addr = bytes2int(self.buf.Blockpool[temp_block].content[8 + 8 * j:12 + 8 * j])
-                    size = bytes2int(self.buf.Blockpool[temp_block].content[12 + 8 * j:16 + 8 * j])
-                    record = self.record2value(self.buf.Blockpool[temp_block].content[addr:addr + size],table ,offset)
+        block_num = self.buf.getBlockNum(file_name)
+        for i in range(block_num):
+            temp_block = self.buf.loadBlock(file_name, i)
+            entries = bytes2int(self.buf.Blockpool[temp_block].content[:4])
+            k=0
+            for j in range(entries):
+                addr = bytes2int(self.buf.Blockpool[temp_block].content[8 + 8 * k:12 + 8 * k])
+                size = bytes2int(self.buf.Blockpool[temp_block].content[12 + 8 * k:16 + 8 * k])
+                record = self.record2value(self.buf.Blockpool[temp_block].content[addr:addr + size],table ,offset)
+                flag = 1
+                for col in condition:
+                    column_id = col['column_id']
+                    op = col['op']
+                    value = col['value']
+                    relation = compare(record[column_id], value)
                     if op == "=":
-                        if record[column_id] == value:
+                        if relation == relation_dic["="]:
                             if table.columns[column_id].is_unique:
-                                self.delete_record([temp_block,j])
-                                return
-                            else:
-                                self.delete_record([temp_block,j])
-                    elif op == '<>' or '!=':
-                        if record[column_id] != value:
-                            self.delete_record([temp_block,j])
+                                flag = 2
+                        else:
+                            flag = 0
+                    elif op == '<>' or op == '!=':
+                        if relation == relation_dic["="]:
+                            flag = 0
                     elif op == '<':
-                        if record[column_id] < value:
-                            self.delete_record([temp_block,j])
-                    elif op == '<=':
-                        if record[column_id] <= value:
-                            self.delete_record([temp_block,j])
+                        if relation != relation_dic["<"]:
+                            flag = 0
+                    elif op == "<=":
+                        if relation == relation_dic[">"]:
+                            flag = 0
                     elif op == '>=':
-                        if record[column_id] >= value:
-                            self.delete_record([temp_block,j])
+                        if relation == relation_dic["<"]:
+                            flag = 0
                     elif op == '>':
-                        if record[column_id] > value:
-                            self.delete_record([temp_block,j])
+                        if relation != relation_dic[">"]:
+                            flag = 0
                     elif op is None:
-                        self.delete_record([temp_block,j])
-                self.buf.Blockpool[temp_block].dirty = True
+                        pass
+                    else:
+                        flag = 0
+                if flag == 1:
+                    self.delete_record([temp_block,k])
+                    self.buf.Blockpool[temp_block].dirty = True
+                elif flag == 2:
+                    self.delete_record([temp_block,k])
+                    self.buf.Blockpool[temp_block].dirty = True
+                else:
+                    k+=1
+                    return
 
     def delete_record(self,i):
         order=i[1]
-        print(order)
         size = bytes2int(self.buf.Blockpool[i[0]].content[order * 8 + 12:order * 8 + 16])
         address = bytes2int(self.buf.Blockpool[i[0]].content[order * 8 + 8:order * 8 + 12])
         entries = self.get_entries(i[0])
@@ -204,58 +231,67 @@ class record_manager:
             templist[j * 8 + 8:j * 8 + 16] = list(self.buf.Blockpool[i[0]].content[j * 8 + 16:j * 8 + 24])
             templist[j * 8 + 8:j * 8 + 12] = list(int2bytes(bytes2int(
                 self.buf.Blockpool[i[0]].content[j * 8 + 16:j * 8 + 20]) + size))
-        print(end,size)
         templist[end + size:] = list(self.buf.Blockpool[i[0]].content[end:address] + \
                                                          self.buf.Blockpool[i[0]].content[address + size:])
+        print(1,len(templist))
         templist[4:8] = list(int2bytes(end + size))
+        print(2, len(templist))
         templist[:4] = list(int2bytes(entries - 1))
-        print(bytes2int(templist[:4]))
+        print(3, len(templist))
         self.buf.Blockpool[i[0]].content=bytearray(templist)
+        print(len(self.buf.Blockpool[i[0]].content))
         self.buf.Blockpool[i[0]].dirty=True
 
     def tuple_select(self, table, condition):
         file_name=self.table2file(table.name)
-        column_id=condition['column_id']
-        op=condition['op']
-        value=condition['value']
         offset=self.get_head_length(table)
         result=[]
-        if table.columns[column_id].has_index:
-            pass
-        else:
-            block_num=self.buf.getBlockNum(file_name)
-            for i in range(block_num):
-                temp_block = self.buf.loadBlock(file_name, i)
-                entries = bytes2int(self.buf.Blockpool[temp_block].content[:4])
-                print(entries)
-                for j in range(entries):
-                    addr = bytes2int(self.buf.Blockpool[temp_block].content[8 + 8 * j:12 + 8 * j])
-                    size = bytes2int(self.buf.Blockpool[temp_block].content[12 + 8 * j:16 + 8 * j])
-                    record = self.record2value(self.buf.Blockpool[temp_block].content[addr:addr + size],table, offset)
+        #if table.columns[column_id].has_index:
+            #pass
+        block_num=self.buf.getBlockNum(file_name)
+        for i in range(block_num):
+            temp_block = self.buf.loadBlock(file_name, i)
+            entries = bytes2int(self.buf.Blockpool[temp_block].content[:4])
+            for j in range(entries):
+                addr = bytes2int(self.buf.Blockpool[temp_block].content[8 + 8 * j:12 + 8 * j])
+                size = bytes2int(self.buf.Blockpool[temp_block].content[12 + 8 * j:16 + 8 * j])
+                record = self.record2value(self.buf.Blockpool[temp_block].content[addr:addr + size],table, offset)
+                flag=1
+                for col in condition:
+                    column_id = col['column_id']
+                    op = col['op']
+                    value = col['value']
+                    relation = compare(record[column_id], value)
                     if op=="=":
-                        if record[column_id]==value:
+                        if relation==relation_dic["="]:
                             if table.columns[column_id].is_unique:
-                                result.append(record)
-                                return result
-                            else:
-                                result.append(record)
+                                flag=2
+                        else:
+                            flag=0
                     elif op=='<>' or op=='!=':
-                        if record[column_id]!=value:
-                            result.append(record)
+                        if relation==relation_dic["="]:
+                            flag=0
                     elif op=='<':
-                        if record[column_id]<value:
-                            result.append(record)
-                    elif op=='<=':
-                        if record[column_id] <= value:
-                            result.append(record)
+                        if relation!=relation_dic["<"]:
+                            flag=0
+                    elif op=="<=":
+                        if relation == relation_dic[">"] :
+                            flag=0
                     elif op=='>=':
-                        if record[column_id]>=value:
-                            result.append(record)
+                        if relation == relation_dic["<"] :
+                            flag=0
                     elif op=='>':
-                        if record[column_id] > value:
-                            result.append(record)
+                        if relation!=relation_dic[">"]:
+                            flag=0
                     elif op is None:
-                        result.append(record)
+                        pass
+                    else:
+                        flag=0
+                if flag==1:
+                    result.append(record)
+                elif flag==2:
+                    result.append(record)
+                    return result
         return result
 
 
@@ -265,11 +301,12 @@ if __name__ == '__main__':
     buf=bufferManager()
     RM=record_manager(buf)
     #RM.table_create("student")
-    RM.tuple_insert(['12349',34],table)
-    result=RM.tuple_select(table,{"column_id":0,"op":"=","value":"12349"})
-    RM.tuple_delete(table,{"column_id":0,"op":"=","value":"12346"})
+    #RM.tuple_insert(['12347',34],table)
+    #RM.tuple_insert(['12346', 34], table)
+    #RM.tuple_insert(['12348', 34], table)
+    #RM.tuple_delete(table, [{"column_id": 0, "op": "<", "value": "12350"}, {"column_id": 0, "op": ">", "value": "12345"}])
+    result=RM.tuple_select(table,[{"column_id":0,"op":"<","value":"12350"},{"column_id":0,"op":">","value":"12345"}])
     print(result)
-    result=RM.tuple_select(table,{"column_id":0,"op":">=","value":"12345"})
     RM.buf.writeBackAll()
 
 
