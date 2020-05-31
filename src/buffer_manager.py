@@ -141,7 +141,7 @@ class bufferManager:
             for i in self.filePool[fileName].blocks.values():
                 self.writeBlock(i)
         else:
-            with open(fileName, 'ab+') as output:
+            with open(fileName, 'rb+') as output:
                 output.close()
 
 

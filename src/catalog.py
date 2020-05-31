@@ -2,6 +2,8 @@ import json
 import os
 import re
 import index
+import api
+from api import *
 
 all_table = {}
 path = ''
@@ -154,10 +156,10 @@ def convert_type(table,condition):
 
 def table_print(table,results):
     print("**********************************************************************************************")
-    print('\t\t\t'+table.name)
+    print('\tTABLE\t'+table.name)
     print("**********************************************************************************************")
     for index, i in enumerate(table.columns):
-        print(i.column_name+'\t'+'|'+'\t',end='')
+        print('\t'+i.column_name+'\t'+'|',end='')
     print('')
     print("----------------------------------------------------------------------------------------------")
 
@@ -193,6 +195,19 @@ def check_types_of_table(table,values):
 
         #if i.is_unique:
             #index.check_unique(table,index,value)
+def sql_format(args):
+    if(re.search('<>', args)):
+        return args.replace('<>',' <> ')
+    elif(re.search('<=', args)):
+        return args.replace('<=',' <= ')
+    elif (re.search('>=', args)):
+        return args.replace('>=',' >= ')
+    elif (re.search('>', args)):
+        return args.replace('>',' > ')
+    elif (re.search('<', args)):
+        return args.replace('<',' < ')
+    elif (re.search('=', args)):
+        return args.replace('=',' = ')
 
 def check_select_statement(table,conditions,__columns):
     # raise an exception if something is wrong
@@ -203,6 +218,8 @@ def check_select_statement(table,conditions,__columns):
         conditions = re.sub('and',',',conditions)
         conditions_lists = conditions.split(',')
         for i in conditions_lists:
+            i = sql_format(i)
+            
             if i.strip().split(' ')[0] not in columns:
                 raise Exception("Catalog Module : no such column"
                                 " name '%s'." % i.strip().split(' ')[0])

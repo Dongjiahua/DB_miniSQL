@@ -15,6 +15,8 @@ def command_debug(sql,table,conditions,columns):
     print("Conditions: ",conditions)
     print("Columns : ",columns)
 
+
+
 def select(args):
     time_start = time.time()
     args = re.sub(r' +', ' ', args).strip().replace('\u200b','')
@@ -26,13 +28,20 @@ def select(args):
     if re.search('where', args):
         start_where = re.search('where', args).start()
         end_where = re.search('where', args).end()
+        
         table = args[end_from+1:start_where].strip()
         statement = args[end_where+1:].strip()
+
         catalog.not_exists_table(table)
         catalog.check_select_statement(table,statement,columns)
         statement = statement.split('and')
+        
         for i in range(0,len(statement)):
+            statement[i] = sql_format(statement[i])
             con_list = statement[i].strip().split(' ')
+            while '' in con_list:
+                con_list.remove('')
+            print(con_list)
             try:
                 con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
                 conditions[i] = {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}
@@ -163,7 +172,10 @@ def delete(args):
         catalog.check_select_statement(table,statement,columns)
         statement = statement.split('and')
         for i in range(0,len(statement)):
+            statement[i] = sql_format(statement[i])
             con_list = statement[i].strip().split(' ')
+            while '' in con_list:
+                con_list.remove('')
             try:
                 con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
                 conditions[i] = {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}
@@ -180,6 +192,10 @@ def delete(args):
     record_manager.tuple_delete(table, conditions[0])
     time_end = time.time()
     print("Successfully delete. Time elapsed : %fs." % (time_end-time_start))
+
+def write_back():
+    buf.writeBackAll()
+    #pass
 
 def find_last(string,str):
     last_position=-1
