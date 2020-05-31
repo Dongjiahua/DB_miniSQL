@@ -68,7 +68,9 @@ class bufferManager:
 
     def getFreeBlock(self):
         if True in self._poolState:
-            return self._poolState.index(True)
+            t=self._poolState.index(True)
+            self._poolState[t]=False
+            return t
         else:
             while True:
                 for i in range(BlockNum):
@@ -142,7 +144,7 @@ class bufferManager:
             for i in self.filePool[fileName].blocks.values():
                 self.writeBlock(i)
         else:
-            with open(fileName, 'rb+') as output:
+            with open(fileName, 'ab+') as output:
                 output.close()
 
 
