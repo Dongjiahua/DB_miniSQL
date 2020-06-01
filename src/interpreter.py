@@ -1,9 +1,9 @@
 # -*- coding:UTF-8 -*-
-import sqlparse
 import api
 import re
 import time
 import catalog
+
 
 class Interpreter():
     def check_syntax(self,parse):
@@ -24,18 +24,64 @@ class Interpreter():
         # print('\t'+parse+'\n')            
         pass
 
-    def debug(self,file_parse):
-        for parse in file_parse:            
-            for token in parse.tokens:
-                print(type(token), " ",token.ttype, " ",token.value)
-            print('\n')
-
     def tokenize(self,file_name):
-        with open("test\\"+file_name, 'r', encoding='utf8') as sql_file:
-            file_parse = sqlparse.parse(sql_file.read().strip())        
-        return file_parse
+        # with open("test\\"+file_name, 'r', encoding='utf8') as sql_file:
+        #     file_parse = sqlparse.parse(sql_file.read().strip())        
+        # return file_parse
+        pass
     
-    def execute(self,file_name):
+    def execute(self,commands):
+        for command in commands:
+            if command == '':
+                continue
+            if command[0] == '#':
+                continue
+            if command.split(' ')[0] == 'insert':
+                try:
+                    api.insert(command[6:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'select':
+                try:
+                    api.select(command[6:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'delete':
+                try:
+                    api.delete(command[6:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'drop':
+                try:
+                    api.drop(command[4:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'create':
+                try:
+                    api.create(command[6:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'execfile':
+                try:
+                    self.exefile(command[9:])
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'quit':
+                try:
+                    print("Bye!")
+                    return 0
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'commit':
+                try:
+                    api.write_back()
+                except Exception as e:
+                    print(str(e))                      
+            else :
+                print("[SYNTAX ERROR] Interpreter Module : Unrecognized command.")
+
+
+    def exefile(self,file_name):
         try:
             f =  open("test\\"+file_name, 'r', encoding='utf8')
         except Exception as e:
@@ -76,7 +122,7 @@ class Interpreter():
                     print(str(e))
             elif command.split(' ')[0] == 'execfile':
                 try:
-                    self.execute(command[9:])
+                    self.exefile(command[9:])
                 except Exception as e:
                     print(str(e))
             elif command.split(' ')[0] == 'quit':
@@ -85,14 +131,26 @@ class Interpreter():
                     return 0
                 except Exception as e:
                     print(str(e))
+            elif command.split(' ')[0] == 'commit':
+                try:
+                    api.write_back()
+                except Exception as e:
+                    print(str(e))                    
             else :
                 print("[SYNTAX ERROR] Interpreter Module : Unrecognized command.")
-
+        # api.write_back()
 
     def __init__(self):
         print("Constructing interpreter...")
-        self.execute('sql.txt')
-        catalog.debug_for_create()
+        while True:
+            try:
+                sql = input("miniSQL> ").split(';')
+                self.execute(sql)
+            except Exception as e:
+                print(e)
+                break
+        self.exefile('sql.txt')
+    #    catalog.debug_for_create()
 
 
 

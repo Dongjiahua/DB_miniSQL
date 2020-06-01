@@ -4,5 +4,6 @@ create table student2(
 	score float,
 	primary key(id) 
 );
+execfile instruction9.txt;
 
-execfile instruction0.txt;
+select * from student2 where name > 'name9';

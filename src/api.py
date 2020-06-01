@@ -15,6 +15,8 @@ def command_debug(sql,table,conditions,columns):
     print("Conditions: ",conditions)
     print("Columns : ",columns)
 
+
+
 def select(args):
     time_start = time.time()
     args = re.sub(r' +', ' ', args).strip().replace('\u200b','')
@@ -26,25 +28,33 @@ def select(args):
     if re.search('where', args):
         start_where = re.search('where', args).start()
         end_where = re.search('where', args).end()
+        
         table = args[end_from+1:start_where].strip()
         statement = args[end_where+1:].strip()
+
         catalog.not_exists_table(table)
         catalog.check_select_statement(table,statement,columns)
         statement = statement.split('and')
+        
         for i in range(0,len(statement)):
+            statement[i] = sql_format(statement[i])
             con_list = statement[i].strip().split(' ')
+            while '' in con_list:
+                con_list.remove('')
+            while ' ' in con_list:
+                con_list.remove('')
             try:
                 con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
-                conditions.append( {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]})
+                conditions.append(convert_type(table, {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}))
+
             except Exception as e:
                 print("[INVALID INDENTIFIER] API Module : "+str(e))
-            conditions[i] = convert_type(table,conditions[i])
+            
             results = RM.tuple_select(all_table[table], conditions)
-            print("?")
 
     else:
         table = args[end_from+1:].strip()
-        conditions = None
+        conditions = []
         catalog.not_exists_table(table)
         results = RM.tuple_select(all_table[table], conditions)
         # catalog.check_select_statement(table,conditions,columns)
@@ -133,11 +143,10 @@ def insert(args):
     catalog.not_exists_table(table)
     values = catalog.check_type_in_table(table,values)
 
-    print(values)
     # index.insert_into_table(table,values)
     RM.tuple_insert(values,all_table[table])
     time_end = time.time()
-    print("Successfully insert. Time elapsed : %fs." % (time_end-time_start))
+    print("Successfully insert %s. Time elapsed : %fs." % (values,(time_end-time_start)))
 
 def delete(args):
     time_start = time.time()
@@ -158,17 +167,23 @@ def delete(args):
     if re.search('where', args):
         start_where = re.search('where', args).start()
         end_where = re.search('where', args).end()
+
         table = args[end_from+1:start_where].strip()
         statement = args[end_where+1:].strip()
+
         catalog.not_exists_table(table)
         catalog.check_select_statement(table,statement,columns)
         statement = statement.split('and')
+        
         for i in range(0,len(statement)):
+            statement[i] = sql_format(statement[i])
             con_list = statement[i].strip().split(' ')
+            while '' in con_list:
+                con_list.remove('')
             try:
                 con_list[0] = catalog.all_table[table].get_column_index(con_list[0])
-                conditions.append( {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]})
-                conditions[i] = convert_type(table,conditions[i])
+                conditions.append(convert_type(table, {'column_id': con_list[0], 'op':con_list[1], 'value':con_list[2]}))
+
             except Exception as e:
                 print("[INVALID INDENTIFIER] API Module : "+str(e))
 
@@ -176,11 +191,15 @@ def delete(args):
         table = args[end_from+1:].strip()
         conditions = []
         catalog.not_exists_table(table)
-        catalog.check_select_statement(table,conditions,columns)
+        catalog.check_delete_statement(table,conditions,columns)
 
-    record_manager.tuple_delete(table, conditions)
+    RM.tuple_delete(all_table[table], conditions)
     time_end = time.time()
     print("Successfully delete. Time elapsed : %fs." % (time_end-time_start))
+
+def write_back():
+    buf.writeBackAll()
+    #pass
 
 def find_last(string,str):
     last_position=-1

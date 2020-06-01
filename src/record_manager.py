@@ -33,7 +33,7 @@ class record_manager:
         self.buf = bufferManager()
 
     def table2file(self, tableName):
-        return "TABLE_" + tableName+".txt"
+        return "data\TABLE_" + tableName+".txt"
 
     def table_create(self, tableName):
         filename = self.table2file(tableName)
@@ -302,10 +302,10 @@ if __name__ == '__main__':
     RM=record_manager(buf)
     #RM.table_create("student")
     #RM.tuple_insert(['12347',34],table)
-    #RM.tuple_insert(['12346', 34], table)
+    RM.tuple_insert(['12346', 34], table)
     #RM.tuple_insert(['12348', 34], table)
     #RM.tuple_delete(table, [{"column_id": 0, "op": "<", "value": "12350"}, {"column_id": 0, "op": ">", "value": "12345"}])
-    result=RM.tuple_select(table,[{"column_id":0,"op":"<","value":"12350"},{"column_id":0,"op":">","value":"12345"}])
+    result=RM.tuple_select(table,[{"column_id":0,"op":"<","value":"12350"},{"column_id":1,"op":">","value":0}])
     print(result)
     RM.buf.writeBackAll()
 
