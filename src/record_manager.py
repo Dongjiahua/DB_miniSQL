@@ -216,9 +216,9 @@ class record_manager:
                 elif flag == 2:
                     self.delete_record([temp_block,k])
                     self.buf.Blockpool[temp_block].dirty = True
+                    return
                 else:
                     k+=1
-                    return
 
     def delete_record(self,i):
         order=i[1]
