@@ -33,7 +33,7 @@ class record_manager:
         self.buf = bufferManager()
 
     def table2file(self, tableName):
-        return "data\TABLE_" + tableName+".txt"
+        return "TABLE_" + tableName+".txt"
 
     def table_create(self, tableName):
         filename = self.table2file(tableName)
@@ -48,8 +48,8 @@ class record_manager:
 
     def tuple_insert(self, values,table):
         condition=[{"column_id":table.primary_key,'op':'=','value':values[table.primary_key]}]
-        if len(self.tuple_select(table,condition))>0:
-            return
+       # if len(self.tuple_select(table,condition))>0:
+           # return
         file_name=self.table2file(table.name)
         temp_block=None
         record=self.value2record(values,table)
@@ -300,12 +300,17 @@ if __name__ == '__main__':
     table.columns=[column("id",True,'char',5),column("age",False,'int')]
     buf=bufferManager()
     RM=record_manager(buf)
-    #RM.table_create("student")
+    RM.table_create("student")
+    for i in range(130):
+        if i%10==0:
+            print("$",i)
+        RM.tuple_insert(["100"*100, 34], table)
     #RM.tuple_insert(['12347',34],table)
-    RM.tuple_insert(['12346', 34], table)
+    #RM.tuple_insert(['12346', 34], table)
     #RM.tuple_insert(['12348', 34], table)
     #RM.tuple_delete(table, [{"column_id": 0, "op": "<", "value": "12350"}, {"column_id": 0, "op": ">", "value": "12345"}])
-    result=RM.tuple_select(table,[{"column_id":0,"op":"<","value":"12350"},{"column_id":1,"op":">","value":0}])
+    result=RM.tuple_select(table,[{"column_id":0,"op":"<","value":"12350"},{"column_id":0,"op":">","value":"12345"}])
+    RM.buf.writeBackAll()
     print(result)
     RM.buf.writeBackAll()
 

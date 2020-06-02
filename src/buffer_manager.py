@@ -6,7 +6,7 @@ import os
 intSize = 16
 floatSize = 16
 
-BlockSize = 4000
+BlockSize = 4*1024
 BlockNum = 10
 FilePoolSize = 10
 
@@ -76,13 +76,15 @@ class bufferManager:
                 for i in range(BlockNum):
                     if self.Blockpool[i].clock == 0 and not self.Blockpool[i].pin:
                         self.freeBlock(i)
+                        self._poolState[i]=False
                         return i
                     else:
                         self.Blockpool[i].clock -= 1
 
     def freeBlock(self, key):
         self.writeBlock(key)
-        del self.filePool[self.Blockpool[key].fileKey].blocks[key]
+        order=self.Blockpool[key].offset//BlockSize
+        del self.filePool[self.Blockpool[key].fileKey].blocks[order]
         if len(self.filePool[self.Blockpool[key].fileKey].blocks)==0:
             del self.filePool[self.Blockpool[key].fileKey]
         self.Blockpool[key].clear()
@@ -132,9 +134,8 @@ class bufferManager:
         with open(self.Blockpool[block].fileKey, 'rb+') as output:
             if self.Blockpool[block].dirty:
                 output.seek(self.Blockpool[block].offset, 0)
-                print(self.Blockpool[block].offset)
+                print(self.Blockpool[block].offset,len(self.Blockpool[block].content))
                 output.write(self.Blockpool[block].content)
-                print(len(self.Blockpool[block].content))
                 self.Blockpool[block].dirty = False
             output.close()
 
@@ -180,3 +181,4 @@ class bufferBlock:
         self.fileKey = None
         self.dirty = False
         self.clock = 1
+        self.content = bytearray(BlockSize)

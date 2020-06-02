@@ -3,6 +3,7 @@ import time
 import catalog
 from record_manager import *
 from buffer_manager import *
+from index_manager import *
 
 global buf 
 buf = bufferManager()
@@ -95,6 +96,18 @@ def create(args):
         column = args[start+1:end].strip()
         catalog.exists_index(index_name)
         catalog.create_index(index_name,table,column)
+
+        c = all_table[table].columns[column]
+        ctype = c.type 
+        if (ctype == 'int'):
+            n = calculate_n(4)
+        elif(ctype == 'float'):
+            n = calculate_n(8)
+        else:
+            n = calculate_n(c.length)
+        
+        tree = Index(n, None, column)
+        all_table[table].Tree[column] = tree
         # index.create_index(index_name,table,column)
     else:
         raise Exception("[SYNTAX ERROR] API Module : Unrecognized symbol for command 'create',it should be 'table' or 'index'.")

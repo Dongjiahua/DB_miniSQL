@@ -4,6 +4,7 @@ import re
 import index
 import api
 from api import *
+from index_manager import *
 
 all_table = {}
 path = ''
@@ -35,6 +36,8 @@ class table_instance():
         raise Exception(column + " is an invalid attribute.")
     columns = []
     indices = []
+    Tree = {}
+
 
 def debug_for_create():
     for t in all_table:
@@ -107,10 +110,10 @@ def create_table(table,statement):
             length = int(cat_list(col_lists[1:])[length_start:length_end])
             type = 'char'
         elif re.search('int', cat_list(col_lists[1:])):
-            length = 0
+            length = 4
             type = 'int'
         elif re.search('float', cat_list(col_lists[1:])):
-            length = 0
+            length = 8
             type = 'float'
         else:
             raise Exception("Catalog Module : Unsupported type for %s." % column_name)
@@ -122,7 +125,16 @@ def create_table(table,statement):
             cur_table.primary_key = index
             col.has_index = True
             flag = True
+            if (col.type == 'int'):
+                n = calculate_n(4)
+            elif(col.type == 'float'):
+                n = calculate_n(8)
+            else:
+                n = calculate_n(col.length)
+            tree = Index(n, None, col.column_name)
+            cur_table.Tree[col.column_name] = tree
             break
+
     if flag == False:
         raise Exception("Catalog Module : primary_key '%s' not exists."
                         % cur_table.primary_key)
