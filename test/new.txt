@@ -1,0 +1,13 @@
+create table student2(
+	id int,
+	name varchar unique,
+	score float,
+	primary key(id) 
+);
+
+execfile instruction0.txt;
+select * from student2 where name = 'name999';
+create index __name on student2(name);
+select * from student2 where name = 'name999';
+drop index __name;
+select * from student2 where name = 'name999';

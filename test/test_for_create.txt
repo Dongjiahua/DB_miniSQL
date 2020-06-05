@@ -1,0 +1,33 @@
+create table student (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+
+create table 学生 (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+
+
+create tab student2 (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+
+cate table student2 (
+​	id int,
+​	name char(12) unique,
+​	score float,
+​	primary key(id) 
+);
+create index stunameidx on student ( name );
+
+create inex stunameidx on student( sname );
+
+create inex stunameidx o tudent( name );

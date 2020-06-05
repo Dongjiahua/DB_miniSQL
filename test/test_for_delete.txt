@@ -1,0 +1,4 @@
+delete from student;
+delete from student where id = "sdasdsa";
+delete from;
+delete student;

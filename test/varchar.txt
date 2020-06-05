@@ -1,0 +1,9 @@
+create table student3(
+	id int,
+	name varchar unique,
+	score float,
+	primary key(id) 
+);
+
+execfile instruction0.txt;
+select * from student3 where name = 'name999';
