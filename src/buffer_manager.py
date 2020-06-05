@@ -134,7 +134,6 @@ class bufferManager:
         with open(self.Blockpool[block].fileKey, 'rb+') as output:
             if self.Blockpool[block].dirty:
                 output.seek(self.Blockpool[block].offset, 0)
-                print(self.Blockpool[block].offset,len(self.Blockpool[block].content))
                 output.write(self.Blockpool[block].content)
                 self.Blockpool[block].dirty = False
             output.close()

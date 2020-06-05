@@ -58,6 +58,8 @@ class Node:
 # Returns leaf node Current and index i such that Current.Pi points to first record * with search key value V
 def find(value, Tree):
     current = Tree.root
+    if current is None:
+        return None,-1
     while not current.is_leaf:
         i = 0
         while i < len(current.keys):
