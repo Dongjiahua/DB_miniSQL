@@ -132,7 +132,7 @@ def create_table(table,statement):
             else:
                 n = calculate_n(col.length)
             tree = Index(n, None, col.column_name)
-            cur_table.Tree[col.column_name] = tree
+            cur_table.Tree[index] = tree
             break
 
     if flag == False:
@@ -235,7 +235,7 @@ def check_delete_statement(table,conditions,__columns):
                 raise Exception("Catalog Module : no such column"
                                 " name '%s'." % i.strip().split(' ')[0])
 
-def check_select_statement(table,conditions,__columns):
+def check_select_statement(table,conditions,__columns = ''):
     # raise an exception if something is wrong
     columns = []
     for i in all_table[table].columns:
@@ -272,10 +272,7 @@ def create_index(index_name,table_name,column):
     all_index[index_name] = {'table':table_name,'column':column}
     for t in all_table:
         if table_name == t:
-            try:
-                all_table[t].new_index(column)
-            except Exception as e:
-                print(str(e))
+            all_table[t].new_index(column)
 
 def exists_table(table):
     if table in all_table.keys():

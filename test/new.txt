@@ -1,9 +1,11 @@
 create table student2(
 	id int,
-	name char(12) unique,
+	name varchar unique,
 	score float,
 	primary key(id) 
 );
 
-# execfile instruction0.txt;
-
+execfile instruction0.txt;
+select * from student2 where name = 'name999';
+update student2 set score = 50 where name = 'name999';
+select * from student2 where name = 'name999';

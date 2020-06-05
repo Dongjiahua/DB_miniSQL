@@ -32,6 +32,7 @@ class Interpreter():
     
     def execute(self,commands):
         for command in commands:
+
             if command == '':
                 continue
             if command[0] == '#':
@@ -70,6 +71,11 @@ class Interpreter():
                 try:
                     print("Bye!")
                     return 0
+                except Exception as e:
+                    print(str(e))
+            elif command.split(' ')[0] == 'update':
+                try:
+                    api.update(command[6:])
                 except Exception as e:
                     print(str(e))
             elif command.split(' ')[0] == 'commit':
@@ -120,6 +126,11 @@ class Interpreter():
                     api.create(command[6:])
                 except Exception as e:
                     print(str(e))
+            elif command.split(' ')[0] == 'update':
+                try:
+                    api.update(command[6:])
+                except Exception as e:
+                    print(str(e))
             elif command.split(' ')[0] == 'execfile':
                 try:
                     self.exefile(command[9:])
@@ -144,12 +155,12 @@ class Interpreter():
         print("Constructing interpreter...")
         while True:
             try:
-                sql = input("miniSQL> ").split(';')
+                sql = input("miniSQL> ").strip().split(';')
                 self.execute(sql)
             except Exception as e:
                 print(e)
                 break
-        self.exefile('sql.txt')
+
     #    catalog.debug_for_create()
 
 
