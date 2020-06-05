@@ -222,8 +222,6 @@ class record_manager:
         return flag
 
     def update_record(self,i,table,record,offset,target):
-        t_column_id=target['column_id']
-        t_value=target['value']
         order=i[1]
         size = bytes2int(self.buf.Blockpool[i[0]].content[order * 8 + 12:order * 8 + 16])
         address = bytes2int(self.buf.Blockpool[i[0]].content[order * 8 + 8:order * 8 + 12])
@@ -231,10 +229,13 @@ class record_manager:
         end = bytes2int(self.buf.Blockpool[i[0]].content[4:8])
         templist = list(self.buf.Blockpool[i[0]].content)
         b1=self.value2record(record,table)
-        if table.columns[t_column_id].has_index:
-            node,i=im.find(record[t_column_id],table.Tree[t_column_id])
-            node.keys[i]=t_value
-        record[t_column_id]=t_value
+        for m in range(len(target)):
+            t_column_id=target[m]['column_id']
+            t_value=target[m]['value']
+            if table.columns[t_column_id].has_index:
+                node,i=im.find(record[t_column_id],table.Tree[t_column_id])
+                node.keys[i]=t_value
+            record[t_column_id]=t_value
         b2=self.value2record(record,table)
         move_length=len(b1)-len(b2)
         mt=0
