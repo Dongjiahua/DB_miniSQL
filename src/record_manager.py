@@ -319,7 +319,12 @@ class record_manager:
                     m_addr+=1
             return number
 
+    #def delete_from_t(self,table):
+        
+
     def tuple_delete(self, table, condition):
+        if condition==[]:
+            condition.append({'column_id':0,'op':None,'value':0})
         file_name = self.table2file(table.name)
         offset = self.get_head_length(table)
         block_num = self.buf.getBlockNum(file_name)
@@ -388,13 +393,26 @@ class record_manager:
         entries = self.get_entries(i[0])
         end = bytes2int(self.buf.Blockpool[i[0]].content[4:8])
         templist = list(self.buf.Blockpool[i[0]].content)
+        if record[1]=='name66':
+            print(1)
         for t in range(len(table.columns)):
                 if table.columns[t].has_index:
                     im.delete(record[t],[self.buf.Blockpool[i[0]].offset//BlockSize,order*8+8],table.Tree[t])
-        mk=order+1
+        mt=0
+        mt_a=0
+        while mt_a<order:
+            if bytes2int(self.buf.Blockpool[i[0]].content[mt_a * 8 + 8:mt_a * 8 + 12])>0:
+                mt+=1
+            mt_a+=1
+        mk=mt+1
+        m_addr=order+1
         while mk<entries:
-            templist[mk*8+8,mk*8+12]=list(int2bytes(bytes2int(
-                self.buf.Blockpool[i[0]].content[mk * 8 + 8:mk * 8 + 12]) + size))
+            if bytes2int(self.buf.Blockpool[i[0]].content[m_addr * 8 + 8:m_addr * 8 + 12])>0:
+                mk+=1
+                templist[m_addr*8+8:m_addr*8+12]=list(int2bytes(bytes2int(
+                    self.buf.Blockpool[i[0]].content[m_addr * 8 + 8:m_addr * 8 + 12]) + size))
+            m_addr+=1
+        templist[order*8+8:order*8+12]=list(int2bytes(0))
         templist[end + size:] = list(self.buf.Blockpool[i[0]].content[end:address] + \
                                                          self.buf.Blockpool[i[0]].content[address + size:])
         templist[4:8] = list(int2bytes(end + size))
@@ -403,6 +421,8 @@ class record_manager:
         self.buf.Blockpool[i[0]].dirty=True
 
     def tuple_select(self, table, condition):
+        if condition==[]:
+            condition.append({'column_id':0,'op':None,'value':0})
         file_name=self.table2file(table.name)
         offset=self.get_head_length(table)
         result=[]
